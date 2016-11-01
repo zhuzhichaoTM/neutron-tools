@@ -2,4 +2,4 @@
 host=10.121.5.36
 port=29418
 project=openstack-dev/neutron-tools
-defaultbranch=master
+defaultbranch=develop/mitaka
