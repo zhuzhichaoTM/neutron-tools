@@ -1,0 +1,35 @@
+#!/bin/bash
+
+log_dir="/var/log/fitmon/"
+if [ ! -d "$log_dir" ]
+then
+    mkdir -p "$log_dir"
+fi
+
+name="neutron-metadata-agent"
+log="/var/log/fitmon/neutron_metadata_agent.log"
+time=$(date "+%Y-%m-%d %H:%M:%S")
+user=$LOGNAME"@"$HOSTNAME
+uuid=$1
+brief_msg_ok="$name service available"
+brief_msg_alarm="$name service unavailable"
+detail_msg_alarm="$name service unavailable,virtual machine will not be able to get metadata information"
+
+status=`service $name status | grep Active | awk '{print $2}'`
+pid=`service $name status | grep PID | awk '{print $3}'`
+
+log_pre="$time $pid INFO [$uuid] $name status is "
+log_pos=",running_nodes $user"
+
+if [ "$status" = "active" ]
+then
+    echo $log_pre"normal"$log_pos >> $log
+    echo 0
+    echo $brief_msg_ok 
+else
+    echo $log_pre"abnormal"$log_pos >> $log
+    echo 1
+    echo $brief_msg_alarm
+    echo $detail_msg_alarm
+fi
+
