@@ -31,6 +31,7 @@ project_name_admin=false
 
 if $project_name_admin ; then
     source $source_file_path/$openrc_name
+    OS_PROJECT_NAME="admin"
     echo -e "Now the shell is beginning in $openrc_name! \n"
 else
     if [ -f "$source_file_path/$tenant_openrc_name" ]; then
@@ -91,7 +92,7 @@ echo -e "well done! delete all the routers\n"
 
 tenantId=`openstack project list | grep "$OS_PROJECT_NAME" |awk '{print$2}' | grep -v '^$'`
 echo -e "tenantId:$tenantId"
-net_list=`neutron net-list | awk '{print $2}' | grep -iv id | grep -v '^$'`
+net_list=`neutron net-list |grep -iv "ext" | awk '{print $2}' | grep -iv id | grep -v '^$'`
 # get net belog to tenant
 net_in_tenant_list=()
 
