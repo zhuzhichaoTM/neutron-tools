@@ -2,9 +2,9 @@
 #  delete operation of vpn router network subnet
 #
 #
-# the operations execute within a general tenant or advanced tenant   
-#  
-# 
+# the operations execute within a general tenant or advanced tenant 
+#
+#
 # history:
 # 2016/11/14
 # author zczhu@fiberhome.com
@@ -142,7 +142,7 @@ do
     if [ $tmp_tenant_id = $tenantId ]; then
         router_in_tenant_list["$length_n"]=$id
         length_n=$[length_n+1]
-    fi 
+    fi
 done
 echo -e "the tenant:$tenantId contain router:\n"
 echo -e "${router_in_tenant_list[*]} "
@@ -202,7 +202,7 @@ do
         echo -e "delete subnet_id:$subnet_id\n"
     done
     neutron net-delete "$net_id" > /dev/null
-    echo -e "delete net_id:$net_id\n" 
+    echo -e "delete net_id:$net_id\n"
 done
 echo -e "well done! delete all the network \n"
 echo -e "well done!\n"

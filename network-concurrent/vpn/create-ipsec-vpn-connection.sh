@@ -1,12 +1,12 @@
 #!/bin/bash
-# concurrent operation of network and subnet
+# concurrent operation for ipsec-vpn
+# create && delete
 #
-#
-# the operations execute within a general tenant or advanced tenant   
+# the operations execute within a general tenant or advanced tenant 
 # you can define the number of network to  create
 # and define the  number of subnet within a network to create
-#  
-# 
+#
+#
 # history:
 # 2016/11/12
 # author zczhu@fiberhome.com
@@ -55,9 +55,9 @@ tenantId=`openstack project list | grep $OS_PROJECT_NAME | awk -F"|" '{print $2}
 IPStart=10
 IPStart_b=100
 # the concurrent number of network creation
-concurrent_number=5
+concurrent_number=2
 # cycle number of concurrent operation
-cycle_number=3
+cycle_number=2
 # external net
 ext_net="ext-net"
 
@@ -99,11 +99,11 @@ do
         sleep 5
         subnetId=`neutron subnet-list | grep "$OS_PROJECT_NAME-subnet-$IPStart" | awk -F "|"  '{print $2}'`
         echo -e "subnetId:$subnetId \n"
-        fi        
-        
+        fi
+
         # get the id of the external net
         ext_net_id=`neutron net-list |grep -w "$ext_net" | awk '{print $2}' | grep -v '^$'`
-        
+
         # create router
         router_id=`neutron router-create "router-$j-$i" |grep -w id | awk '{print$4}' |grep -v '^$'`
         sleep 2
@@ -115,8 +115,8 @@ do
         temp=`neutron router-gateway-set $router_id $ext_net_id`
         sleep 3
         neutron router-show $router_id >/dev/null
-        
-        # create network2 and router2 for ipsec-vpn 
+
+        # create network2 and router2 for ipsec-vpn
         # create network
         neutron net-create --admin-state-up "$OS_PROJECT_NAME-net-b-$j-$i" >/dev/null
         sleep 3
@@ -148,7 +148,7 @@ do
         temp=`neutron router-gateway-set $router_id_b $ext_net_id`
         sleep 2
         neutron router-show $router_id_b >/dev/null
-        
+
         # create ike-a &ipsec-a
         ikepolicy_id_a=`neutron vpn-ikepolicy-create "ikepolicy_a-$j-$i" |grep -w id |awk '{print$4}' |grep -v '^$'`
         ipsecpolicy_id_a=`neutron vpn-ipsecpolicy-create "ipsecpolicy_a-$j-$i" |grep -w id |awk '{print$4}' |grep -v '^$'`
@@ -169,7 +169,7 @@ do
 --ipsecpolicy-id $ipsecpolicy_id_a \
 --peer-address $peer_gw_router_b  --peer-id $peer_gw_router_b \
 --peer-cidr $peer_cidr_a  --psk "secret" >/dev/null
-        sleep 20 
+        sleep 20
         # create ike-b &ipsec-b
         ikepolicy_id_b=`neutron vpn-ikepolicy-create "ikepolicy_b-$j-$i" |grep -w id |awk '{print$4}' |grep -v '^$'`
         ipsecpolicy_id_b=`neutron vpn-ipsecpolicy-create "ipsecpolicy_b-$j-$i" |grep -w id |awk '{print$4}' |grep -v '^$'`
@@ -178,7 +178,7 @@ do
         sleep 10
         vpnserver_b=`neutron vpn-service-list |grep "vpnservice_b-$j-$i" |grep "$router_id_b" |awk '{print$2}' |grep -v '^$'`
         echo -e "vpnserver:$vpnserver_b for router:$router_id_b\n"
-        
+ 
         # get the peer address,in fact ,it's the gateway of router_a and subnet_a
         peer_gw_router_a=`neutron router-list |grep "$router_id" |awk -F'"' '{print$16}' |grep -v '^$'`
         peer_cidr_b=`neutron subnet-list |grep "$subnetId" |awk '{print$6}' |grep -v '^$'`
@@ -202,7 +202,7 @@ do
         connection_a=`neutron ipsec-site-connection-list |grep "ipsec-site-connection_a-$j-$i" |awk '{print$10}' |grep -v '^$'`
         sleep 5
         connection_b=`neutron ipsec-site-connection-list |grep "ipsec-site-connection_b-$j-$i" |awk '{print$10}' |grep -v '^$'`
-        sleep 5 
+        sleep 5
         if [ $connection_b = "ACTIVE" -a $connection_a = "ACTIVE" -a $vpn_state_b = "ACTIVE" -a $vpn_state_a = "ACTIVE" ]; then
             echo -e "ipsec-vpn state:$vpn_state_a-$vpn_state_b-$connection_a-$connection_b \n"
             echo -e "ipsec-vpn-$j-$i function is ok"
@@ -214,6 +214,7 @@ do
     done
     sleep 5
     wait
+    sleep 15
 done
 neutron quota-update --network $networkQuota --subnet $subnetQuota --port $portQuota --router $routerQuota --tenant-id $OS_PROJECT_NAME >/dev/null
 echo -e "well done! \n"
