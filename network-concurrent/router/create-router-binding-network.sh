@@ -112,6 +112,6 @@ do
     done
     wait
 done
-neutron quota-update --network $networkQuota --subnet $subnetQuota --port $portQuota --tenant-id $OS_PROJECT_NAME >/dev/null
+neutron quota-update --network $networkQuota --subnet $subnetQuota --port $portQuota --tenant-id $tenantId >/dev/null
 echo -e "well done! \n"
 

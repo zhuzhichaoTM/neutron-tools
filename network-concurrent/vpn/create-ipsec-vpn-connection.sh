@@ -216,6 +216,6 @@ do
     wait
     sleep 15
 done
-neutron quota-update --network $networkQuota --subnet $subnetQuota --port $portQuota --router $routerQuota --tenant-id $OS_PROJECT_NAME >/dev/null
+neutron quota-update --network $networkQuota --subnet $subnetQuota --port $portQuota --router $routerQuota --tenant-id $tenantId >/dev/null
 echo -e "well done! \n"
 
