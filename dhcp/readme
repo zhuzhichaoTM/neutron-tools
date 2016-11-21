@@ -1,0 +1,17 @@
+使用手册
+备注：
+openrc_template是脚本需要使用的文件，在脚本运行的过程中，还会产生一些中间文件。
+执行clean up时需要这些中间文件，不要手动删除中间文件
+
+
+1 首先使用create-project-user_for_test.sh创建用于测试的project和user
+
+2 执行TestDhcp.sh测试dhcp
+
+3 执行clean_up.sh，清理测试dhcp创建的网络和计算资源
+
+4 执行clean_project_user.sh，清理第1步创建的project和user
+
+说明：以上操作是有顺序要求的，请勿乱序操作
+
+备注：如果需要继续测试，可以不执行第4步；而是反复执行2、3步
