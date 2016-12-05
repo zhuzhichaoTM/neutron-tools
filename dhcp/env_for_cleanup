@@ -1,0 +1,7 @@
+openrc_file=zczhu_zczhu_openrc
+project_id=072d0c9c311248d8ab4a0a7bc0b9a1ac
+user_id=2667f2d43ba544169fa942dd36b75382
+net_id=
+subnet_id=
+vm_name=vm-to-test-dhcp
+count=6

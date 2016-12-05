@@ -1,4 +1,5 @@
-#!/bin/bash
+#
+/bin/bash
 # concurrent operation of network and subnet
 #
 #
