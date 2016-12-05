@@ -362,7 +362,7 @@ function neutron_fw_delete() {
     do              
         tmp_tenant_id=`neutron firewall-rule-show "$id" |grep -w tenant_id | awk '{print $4}' | grep -v '^$'`
         if [ $tmp_tenant_id = $tenantId ]; then
-            fw_policy_in_tenant_list["$length_n"]=$id
+            fw_rule_in_tenant_list["$length_n"]=$id
             length_n=$[length_n+1]
         fi  
     done    
@@ -370,6 +370,7 @@ function neutron_fw_delete() {
     do
         neutron firewall-rule-delete $fw_rule_id >/dev/null
     done
+    echo -e "delete all the fws!!\n"    
 }
 
 function neutron_network_subnet_port_create() {
