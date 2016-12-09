@@ -17,7 +17,7 @@ echo -e "Now the shell is beginning! \n"
 # please change them according to your openstack environment
 # use admin project
 source_file_path="/root"
-openrc_name="admin-openrc"
+openrc_name="admin-openrc.sh"
 
 # use private tenant project
 # please change them according to your tenant info
@@ -29,7 +29,7 @@ OS_PASSWORD="123"
 
 # default set false that means you choose your private tenant
 # set true that means you choose admin tenant
-project_name_admin=true
+project_name_admin=false
 
 if $project_name_admin ; then
     source $source_file_path/$openrc_name
@@ -57,7 +57,7 @@ IPStart_b=100
 # the concurrent number of network creation
 concurrent_number=2
 # cycle number of concurrent operation
-cycle_number=2
+cycle_number=1
 # external net
 ext_net="ext-net"
 

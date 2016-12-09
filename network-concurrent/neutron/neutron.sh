@@ -8,7 +8,7 @@ function neutron_ipsec_vpn_create() {
         # create network1 for ipsec-vpn
         # create network
         neutron net-create --admin-state-up "$OS_PROJECT_NAME-net-$j-$i" >/dev/null
-        sleep 3
+        sleep 1
         netId=`neutron net-list | grep "$OS_PROJECT_NAME-net-$j-$i" | awk -F "|"  '{print $2}'`
 
         if [ -n "$netId" ];then
@@ -18,7 +18,7 @@ function neutron_ipsec_vpn_create() {
 --gateway 192.168.$IPStart.1 --allocation-pool start=192.168.$IPStart.10,end=192.168.$IPStart.100 \
 --dns-nameserver 10.19.8.10 --enable-dhcp \
 --ip-version 4 --name $OS_PROJECT_NAME-subnet-$IPStart $netId 192.168.$IPStart.0/24 >/dev/null
-        sleep 5
+        sleep 2
         subnetId=`neutron subnet-list | grep "$OS_PROJECT_NAME-subnet-$IPStart" | awk -F "|"  '{print $2}'`
         echo -e "subnetId:$subnetId \n"
         fi
@@ -28,20 +28,20 @@ function neutron_ipsec_vpn_create() {
 
         # create router
         router_id=`neutron router-create "router-$j-$i" |grep -w id | awk '{print$4}' |grep -v '^$'`
-        sleep 2
+        sleep 1
         echo -e "router:$router_id"
         # binding network
         neutron router-interface-add $router_id $subnetId >/dev/null
-        sleep 3
+        sleep 1
         # set gateway
         temp=`neutron router-gateway-set $router_id $ext_net_id`
-        sleep 3
+        sleep 1
         neutron router-show $router_id >/dev/null
 
         # create network2 and router2 for ipsec-vpn
         # create network
         neutron net-create --admin-state-up "$OS_PROJECT_NAME-net-b-$j-$i" >/dev/null
-        sleep 3
+        sleep 1
         netId_b=`neutron net-list | grep "$OS_PROJECT_NAME-net-b-$j-$i" | awk -F "|"  '{print $2}'`
 
         if [ -n "$netId_b" ];then
@@ -51,7 +51,7 @@ function neutron_ipsec_vpn_create() {
 --gateway 192.168.$IPStart_b.1 --allocation-pool start=192.168.$IPStart_b.10,end=192.168.$IPStart_b.100 \
 --dns-nameserver 10.19.8.10 --enable-dhcp \
 --ip-version 4 --name $OS_PROJECT_NAME-subnet-b-$IPStart_b $netId_b 192.168.$IPStart_b.0/24 >/dev/null
-        sleep 5
+        sleep 2
         subnetId_b=`neutron subnet-list | grep "$OS_PROJECT_NAME-subnet-b-$IPStart_b" | awk -F "|" '{print $2}'`
         echo -e "subnetId:$subnetId_b \n"
         fi
@@ -61,11 +61,11 @@ function neutron_ipsec_vpn_create() {
 
         # create router
         router_id_b=`neutron router-create "router-b-$j-$i" |grep -w id | awk '{print$4}' |grep -v '^$'`
-        sleep 2
+        sleep 1
         echo -e "router:$router_id_b"
         # binding network
         neutron router-interface-add $router_id_b $subnetId_b >/dev/null
-        sleep 2
+        sleep 1
         # set gateway
         temp=`neutron router-gateway-set $router_id_b $ext_net_id`
         sleep 2
@@ -76,7 +76,7 @@ function neutron_ipsec_vpn_create() {
         ipsecpolicy_id_a=`neutron vpn-ipsecpolicy-create "ipsecpolicy_a-$j-$i" |grep -w id |awk '{print$4}' |grep -v '^$'`
         # create vpnservice_a
         neutron vpn-service-create --name "vpnservice_a-$j-$i" $router_id $subnetId >/dev/null
-        sleep 10
+        sleep 5
         vpnserver_a=`neutron vpn-service-list |grep "vpnservice_a-$j-$i" |grep "$router_id" |awk '{print$2}' |grep -v '^$'`
         echo -e "vpnserver:$vpnserver_a for router:$router_id\n"
         # get the peer address,in fact ,it's the gateway of router_b and subnet_b
@@ -91,13 +91,13 @@ function neutron_ipsec_vpn_create() {
 --ipsecpolicy-id $ipsecpolicy_id_a \
 --peer-address $peer_gw_router_b  --peer-id $peer_gw_router_b \
 --peer-cidr $peer_cidr_a  --psk "secret" >/dev/null
-        sleep 20
+        sleep 10
         # create ike-b &ipsec-b
         ikepolicy_id_b=`neutron vpn-ikepolicy-create "ikepolicy_b-$j-$i" |grep -w id |awk '{print$4}' |grep -v '^$'`
         ipsecpolicy_id_b=`neutron vpn-ipsecpolicy-create "ipsecpolicy_b-$j-$i" |grep -w id |awk '{print$4}' |grep -v '^$'`
         # create vpnservice_b
         neutron vpn-service-create --name "vpnservice_b-$j-$i" $router_id_b $subnetId_b >/dev/null
-        sleep 10
+        sleep 5
         vpnserver_b=`neutron vpn-service-list |grep "vpnservice_b-$j-$i" |grep "$router_id_b" |awk '{print$2}' |grep -v '^$'`
         echo -e "vpnserver:$vpnserver_b for router:$router_id_b\n"
  
@@ -113,16 +113,16 @@ function neutron_ipsec_vpn_create() {
 --ipsecpolicy-id $ipsecpolicy_id_b \
 --peer-address $peer_gw_router_a  --peer-id $peer_gw_router_a \
 --peer-cidr $peer_cidr_b  --psk "secret" >/dev/null
-        sleep 20
+        sleep 10
         echo -e "ipsec-vpn create! \n"
         # get the state of vpnservice
         vpn_state_a=`neutron vpn-service-list |grep "$vpnserver_a" |awk '{print$8}' |grep -v '^$'`
-        sleep 5
+        sleep 3
         vpn_state_b=`neutron vpn-service-list |grep "$vpnserver_b" |awk '{print$8}' |grep -v '^$'`
-        sleep 5
+        sleep 3
         # get the state of ipsec-site-connection
         connection_a=`neutron ipsec-site-connection-list |grep "ipsec-site-connection_a-$j-$i" |awk '{print$10}' |grep -v '^$'`
-        sleep 5
+        sleep 3
         connection_b=`neutron ipsec-site-connection-list |grep "ipsec-site-connection_b-$j-$i" |awk '{print$10}' |grep -v '^$'`
         sleep 5
         if [ $connection_b = "ACTIVE" -a $connection_a = "ACTIVE" -a $vpn_state_b = "ACTIVE" -a $vpn_state_a = "ACTIVE" ]; then
@@ -222,8 +222,8 @@ function neutron_floatingip_create() {
     #create floatingip
  
     # create vm
-    flavor=`nova flavor-list | grep True | awk -F "|"  'NR==1{print $3}'`
-    image=`nova image-list | grep ACTIVE | awk -F "|"  'NR==1{print $3}'`
+    flavor=`nova flavor-list | grep "m1.tiny" | awk -F "|"  'NR==1{print $3}'`
+    image=`glance image-list |grep "cirros" | awk '{print $2}'`
     # del space
     netId_nova=${netId:1:36}
     echo -e "create vm $OS_PROJECT_NAME-ins-$j-$i "
@@ -234,16 +234,16 @@ function neutron_floatingip_create() {
     ext_net_id=`neutron net-list |grep -w "$ext_net" | awk '{print $2}' | grep -v '^$'`
         
     # create and bind float ip
-    floatip=`neutron floatingip-create $ext_net_id | awk -F "|"  'NR==7{print $3}'`
-    sleep 2
+    floatip=`neutron floatingip-create $ext_net_id |grep "floating_ip_address" |awk '{print$4}'`
+    sleep 1
     echo -e "$OS_PROJECT_NAME-ins-$j-$i bind floating-ip $floatip"
     nova floating-ip-associate "$OS_PROJECT_NAME-ins-$j-$i" $floatip >/dev/null
-    sleep 2   
+    sleep 1   
     echo -e "$OS_PROJECT_NAME-ins-$j-$i unbind floating-ip $floatip"
-    nova floating-ip-disassociate "$OS_PROJECT_NAME-ins-$j-$i" $floatip >/dev/null     
-    sleep 2
-    floatip2=`neutron floatingip-create $ext_net_id | awk -F "|"  'NR==7{print $3}'`
-    sleep 2
+    nova  floating-ip-disassociate "$OS_PROJECT_NAME-ins-$j-$i" $floatip >/dev/null     
+    sleep 1
+    floatip2=`neutron floatingip-create $ext_net_id |grep "floating_ip_address" |awk '{print$4}'`
+    sleep 1
     echo -e "$OS_PROJECT_NAME-ins-$j-$i bind new floating-ip $floatip2"
     nova floating-ip-associate "$OS_PROJECT_NAME-ins-$j-$i" $floatip2 >/dev/null
     floatid=`neutron floatingip-list |grep $floatip |awk '{print$2}' | grep -v '^$'`
@@ -271,8 +271,8 @@ function neutron_floatingip_delete() {
     # delete vm
     for nova_id in ${nova_in_tenant_list[*]};
     do
-        floatip=`nova floating-ip-list |grep "$nova_id" |awk '{print$4}' | grep -v '^$'`
-        floatid=`nova floating-ip-list |grep "$nova_id" |awk '{print$2}' | grep -v '^$'`
+        floatip=`neutron floatingip-list |grep "$nova_id" |awk '{print$4}' | grep -v '^$'`
+        floatid=`neutron floatingip-list |grep "$nova_id" |awk '{print$2}' | grep -v '^$'`
         if [ -n "$floatid" ];then
             nova floating-ip-disassociate "$nova_id" $floatip >/dev/null
             neutron floatingip-delete $floatid >/dev/null
@@ -298,22 +298,23 @@ function neutron_floatingip_delete() {
     do
         neutron floatingip-delete $floatingip_id >/dev/null
     done
-
+    echo -e "delete all the floatingips!!\n"
 }
 
 function neutron_fw_create() {
     #create fw policy, rule, then bind router
     fw_policy_1=`neutron firewall-policy-create "fw-policy-$j-$j-1" |grep -w id | awk '{print$4}' |grep -v '^$'`
     fw_policy_2=`neutron firewall-policy-create "fw-policy-$j-$j-2" |grep -w id | awk '{print$4}' |grep -v '^$'`
+    sleep 1
     fw_rule_1=`neutron firewall-rule-create --name "fw-rule-$j-$i-1" --protocol tcp  --action allow |grep -w id | awk '{print$4}' |grep -v '^$'`
     fw_rule_2=`neutron firewall-rule-create --name "fw-rule-$j-$i-2" --protocol tcp  --action allow |grep -w id | awk '{print$4}' |grep -v '^$'`
-    sleep 2
+    sleep 1
     neutron firewall-policy-insert-rule "$fw_policy_1" "$fw_rule_1" >/dev/null
     neutron firewall-policy-insert-rule "$fw_policy_2" "$fw_rule_2" >/dev/null
-    sleep 2
-    neutron firewall-create --name "fw-firewall-$j-$i-1" --router "router-$j-$i" "fw-policy-$j-$i-1" >/dev/null
-    neutron firewall-delete "fw-firewall-$j-$i-1" >/dev/null
-    neutron firewall-create --name "fw-firewall-$j-$i-2" --router "router-$j-$i" "fw-policy-$j-$i-2" >/dev/null
+    sleep 1
+    fw_id=`neutron firewall-create --name "fw-firewall-$j-$i-1" --router "router-$j-$i" $fw_policy_1 |grep -w id | awk '{print$4}' |grep -v '^$'` >/dev/null
+    neutron firewall-delete $fw_id >/dev/null
+    neutron firewall-create --name "fw-firewall-$j-$i-2" --router "router-$j-$i" $fw_policy_2 >/dev/null
     echo -e "fw-firewall-$j-$i-1 && fw-firewall-$j-$i-2:firewall create success!!!\n"
 }
 
@@ -376,7 +377,7 @@ function neutron_fw_delete() {
 function neutron_network_subnet_port_create() {
     # create network
     neutron net-create --admin-state-up "$OS_PROJECT_NAME-net-$j-$i" >/dev/null
-    sleep 3
+    sleep 2
     netId=`neutron net-list | grep "$OS_PROJECT_NAME-net-$j-$i" | awk -F "|"  '{print $2}'`
 
     if [ -n "$netId" ];then
@@ -386,7 +387,7 @@ function neutron_network_subnet_port_create() {
 --gateway 192.168.$IPStart.1 --allocation-pool start=192.168.$IPStart.10,end=192.168.$IPStart.100 \
 --dns-nameserver 10.19.8.10 --enable-dhcp \
 --ip-version 4 --name $OS_PROJECT_NAME-subnet-$IPStart $netId 192.168.$IPStart.0/24 >/dev/null
-        sleep 5
+        sleep 3
         subnetId=`neutron subnet-list | grep "$OS_PROJECT_NAME-subnet-$IPStart" | awk -F "|"  '{print $2}'`
         echo -e "subnetId:$subnetId \n"
     fi
@@ -432,6 +433,19 @@ function neutron_network_subnet_port_delete() {
         echo -e "delete net_id:$net_id\n" 
     done
     echo -e "delete all the net subnet port success!!\n"
+}
+
+function neutron_dhcp_test() {
+    # test dhcp through crate vm
+    # create vm
+    flavor=`nova flavor-list | grep "m1.tiny" | awk -F "|"  'NR==1{print $3}'`
+    image=`glance image-list |grep "cirros" | awk '{print $2}'`
+    # del space
+    netId_nova=${netId:1:36}
+    echo -e "create vm $OS_PROJECT_NAME-ins-$j-$i "
+    nova boot "$OS_PROJECT_NAME-ins-$j-$i" --flavor $flavor --image $image --nic net-id=$netId_nova --min-count 7 >/dev/null
+    sleep 10
+    echo -e "test dhcp success!!\n"
 }
 
 function neutron_router_create() {
@@ -496,7 +510,7 @@ function neutron-openrc-create() {
     # please change them according to your openstack environment
     # use admin project
     source_file_path="/root"
-    openrc_name="admin-openrc"
+    openrc_name="admin-openrc.sh"
 
     # use private tenant project
     # please change them according to your tenant info

@@ -19,6 +19,7 @@ net_subnet_port_create=$1
 router_create=$2
 firewall_create=$3
 floatingip_create=$4
+dhcp_test=$5
 
 #setup include
 realpath=$(readlink -f "$0")
@@ -36,9 +37,9 @@ tenantId=`openstack project list | grep $OS_PROJECT_NAME | awk -F"|" '{print $2}
 neutron-quota-update
 
 # the concurrent number of network creation
-concurrent_number=1
+concurrent_number=$6
 # cycle number of concurrent operation
-cycle_number=1
+cycle_number=$7
 
 # configuration for network
 # start_ip for network
@@ -71,11 +72,16 @@ do
         if [ $floatingip_create = "1" ]; then
             neutron_floatingip_create
         fi
+
+        #create vm for dhcp test
+        if [ $dhcp_test = "1" ]; then
+            neutron_dhcp_test
+        fi
         } &
     done
     sleep 5
     wait
-    sleep 15
+    sleep 10
 done
 neutron quota-update --network $networkQuota --subnet $subnetQuota --port $portQuota --router $routerQuota --tenant-id $tenantId >/dev/null
 echo -e "well done! \n"
